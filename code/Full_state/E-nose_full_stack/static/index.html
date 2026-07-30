@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SmellGood | E-Nose Detection System</title>
+    <meta name="description" content="Electronic Nose Diabetes Detection System — SmellGood Bio-Sensing Platform">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SmellGood">
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+
+        <!-- ======================================== -->
+        <!-- Screen 1: 資料輸入 -->
+        <!-- ======================================== -->
+        <div id="input-screen" class="screen active">
+            <div class="header">
+                <div class="logo" id="logo-badge">SG</div>
+                <h1>SmellGood</h1>
+                <p class="subtitle">E-Nose Detection System</p>
+                <div class="device-badge" id="device-badge">
+                    <span class="badge-dot"></span>
+                    <span id="device-status-text">檢查裝置中...</span>
+                </div>
+            </div>
+
+            <form id="sensorForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="userId">受試者編號 Subject ID</label>
+                    <input type="text" id="userId" placeholder="e.g. SUB_001" required>
+                </div>
+
+                <div class="row">
+                    <div class="form-group flex-1">
+                        <label for="gender">性別 Gender</label>
+                        <select id="gender" class="custom-select">
+                            <option value="Male">男 Male</option>
+                            <option value="Female">女 Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="age">年齡 Age</label>
+                        <input type="number" id="age" placeholder="25" min="1" max="150" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group flex-1">
+                        <label for="height">身高 Height (cm)</label>
+                        <input type="number" id="height" placeholder="170" step="0.1" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="weight">體重 Weight (kg)</label>
+                        <input type="number" id="weight" placeholder="65" step="0.1" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>進食狀態 Meal State</label>
+                    <div class="meal-state-group">
+                        <label class="radio-card" id="radio-fasting">
+                            <input type="radio" name="mealState" value="fasting" checked>
+                            <span class="radio-card-label">🍽️ 空腹<br><small>Fasting</small></span>
+                        </label>
+                        <label class="radio-card" id="radio-postmeal">
+                            <input type="radio" name="mealState" value="postmeal">
+                            <span class="radio-card-label">🕐 飯後<br><small>After Meal</small></span>
+                        </label>
+                    </div>
+                    <div id="postmeal-time" class="postmeal-input hidden">
+                        <label for="mealHours">飯後時間 Time After Meal</label>
+                        <div class="time-input-row">
+                            <input type="number" id="mealHours" placeholder="2" min="0.5" max="24" step="0.5" value="2">
+                            <span class="time-unit">小時 (h)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary" id="startBtn" onclick="startDetection()">
+                    <span class="btn-icon">▶</span>
+                    開始檢測 Start Detection
+                </button>
+                <div id="input-msg" class="sys-message"></div>
+            </form>
+        </div>
+
+        <!-- ======================================== -->
+        <!-- Screen 2: 檢測中 -->
+        <!-- ======================================== -->
+        <div id="measuring-screen" class="screen">
+            <div class="header">
+                <h1>檢測中</h1>
+                <p class="subtitle">Measuring in Progress</p>
+            </div>
+
+            <div class="measuring-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring delay-1"></div>
+                <div class="pulse-ring delay-2"></div>
+                <div class="pulse-center">
+                    <span class="nose-icon">👃</span>
+                </div>
+            </div>
+
+            <div class="status-text">
+                <p id="measure-status" class="status-label">等待裝置回應...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <p id="bmi-display" class="bmi-inline"></p>
+            <div id="measuring-msg" class="sys-message"></div>
+        </div>
+
+        <!-- ======================================== -->
+        <!-- Screen 3: 簡易結果（首次量測） -->
+        <!-- ======================================== -->
+        <div id="simple-result-screen" class="screen">
+            <div class="header">
+                <h1>測量結果</h1>
+                <p id="simple-time" class="subtitle">Time: --</p>
+            </div>
+
+            <div class="result-card">
+                <p class="result-label">丙酮濃度 Acetone</p>
+                <h1 id="simple-ppm" class="result-value">--</h1>
+                <p class="result-unit">ppm</p>
+            </div>
+
+            <div class="info-note">
+                <p>📋 此為首次測量結果。請於不同進食狀態下進行第二次測量，以獲得完整糖尿病診斷分析。</p>
+            </div>
+
+            <button type="button" class="btn-secondary" id="simple-return-btn" onclick="resetUI()">
+                ↩ 返回輸入 Return
+            </button>
+        </div>
+
+        <!-- ======================================== -->
+        <!-- Screen 4: 詳細結果（含預測） -->
+        <!-- ======================================== -->
+        <div id="detailed-result-screen" class="screen">
+            <div class="header">
+                <h1>診斷結果</h1>
+                <p id="detailed-time" class="subtitle">Time: --</p>
+            </div>
+
+            <div id="prediction-card" class="prediction-card">
+                <p class="prediction-label">診斷判定 DIAGNOSIS</p>
+                <h1 id="prediction-text" class="prediction-value">--</h1>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidence-fill"></div>
+                </div>
+                <p id="confidence-text" class="confidence-label">信心度: --%</p>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">丙酮濃度 Acetone</span>
+                    <span id="detail-ppm" class="detail-value">-- ppm</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">丙酮最大值 Max</span>
+                    <span id="detail-max" class="detail-value">-- ppm</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">丙酮斜率 Slope</span>
+                    <span id="detail-slope" class="detail-value">-- ppm/min</span>
+                </div>
+            </div>
+
+            <button type="button" class="btn-secondary" id="detailed-return-btn" onclick="resetUI()">
+                ↩ 返回輸入 Return
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ======================================== -->
+    <!-- Loading Overlay -->
+    <!-- ======================================== -->
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="logo-placeholder">SG</div>
+            <div class="spinner"></div>
+            <p>Initializing System...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SmellGood | Bio-Sensing Dashboard</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SmellGood">
+    
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        
+        <div id="input-screen" class="panel screen active">
+            <div class="header">
+                <h2>SmellGood</h2>
+                <p>Patient Data Entry</p>
+            </div>
+            
+            <form id="sensorForm">
+                <div class="form-group">
+                    <label for="userId">User ID</label>
+                    <input type="text" id="userId" placeholder="e.g. Test_001" required>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group flex-1">
+                        <label for="gender">Gender</label>
+                        <select id="gender" class="custom-select">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" placeholder="e.g. 25" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group flex-1">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" placeholder="175" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" placeholder="70" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fre">Frequency (次數)</label>
+                    <input type="number" id="fre" placeholder="e.g. 1" required>
+                </div>
+
+                <button type="button" class="btn-primary" onclick="processData()">Calculate & Save</button>
+                <div id="input-msg" class="sys-message"></div>
+            </form>
+        </div>
+
+        <div id="output-screen" class="panel screen hidden">
+            <div class="header">
+                <h2>Analysis Result</h2>
+                <p id="display-time">Time: --</p>
+            </div>
+            
+            <div class="result-center">
+                <p class="result-label">Calculated BMI</p>
+                <h1 id="display-bmi" class="result-value">--</h1>
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" class="btn-secondary" onclick="resetUI()">Return to Input</button>
+            </div>
+            
+            <div id="output-msg" class="sys-message"></div>
+        </div>
+
+    </div>
+
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="logo-placeholder">SG</div>
+            <div class="spinner"></div>
+            <p>Initializing...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

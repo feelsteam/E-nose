@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: sm_database
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: smellgood2026
+      MARIADB_DATABASE: smellgood
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: sm_phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: smellgood2026
+    depends_on:
+      - db

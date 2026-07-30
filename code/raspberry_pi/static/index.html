@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Nose v3 測試介面</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0a0f1e;
+      --surface: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #6366f1;
+      --accent2: #22d3ee;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    /* ─── Header ─── */
+    header {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    header span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    #device-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    #device-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    #device-badge.connected .dot {
+      background: var(--success);
+    }
+
+    #device-badge.disconnected .dot {
+      background: var(--danger);
+    }
+
+    /* ─── Card ─── */
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--accent2);
+    }
+
+    /* ─── Form ─── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .form-group input,
+    .form-group select {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: opacity .2s, transform .1s;
+    }
+
+    .btn:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #msg {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      min-height: 20px;
+      text-align: center;
+    }
+
+    /* ─── Status ─── */
+    .status-box {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 0;
+    }
+
+    .status-box.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(99, 102, 241, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #status-text {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    /* ─── Result cards ─── */
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 4px;
+    }
+
+    .result-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .result-item .tag {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .result-item .verdict {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .result-item .verdict.healthy {
+      color: var(--success);
+    }
+
+    .result-item .verdict.diabetes {
+      color: var(--danger);
+    }
+
+    .result-item .conf {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      padding: 4px 0;
+    }
+
+    .detail-row span:last-child {
+      color: var(--accent2);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 500px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div>
+      <h1>🧪 E-Nose v3 測試介面</h1>
+      <span>兩組預設資料 · 二階段模型</span>
+    </div>
+    <div id="device-badge" class="disconnected">
+      <span class="dot"></span>
+      <span id="badge-text">裝置未連線</span>
+    </div>
+  </header>
+
+  <div class="card" id="input-card">
+    <h2>受試者資料</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>受試者編號</label>
+        <input id="userId" type="text" placeholder="e.g. S001" />
+      </div>
+      <div class="form-group">
+        <label>性別</label>
+        <select id="gender">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>年齡</label>
+        <input id="age" type="number" placeholder="歲" min="1" />
+      </div>
+      <div class="form-group">
+        <label>身高 (cm)</label>
+        <input id="height" type="number" placeholder="cm" />
+      </div>
+      <div class="form-group">
+        <label>體重 (kg)</label>
+        <input id="weight" type="number" placeholder="kg" />
+      </div>
+    </div>
+
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:14px;">
+      ⚠ 本次測試使用預設兩組資料：<br>
+      組A：空腹0.65 ppm + 飯後0.79 ppm（正常）<br>
+      組B：空腹0.19 ppm + 飯後0.15 ppm（潛在組）
+    </p>
+
+    <button class="btn" id="startBtn" onclick="startDetection()">▶ 開始檢測</button>
+    <div id="msg"></div>
+  </div>
+
+  <div class="card" id="wait-card" style="display:none;">
+    <h2>採集中</h2>
+    <div class="status-box active">
+      <div class="spinner"></div>
+      <div id="status-text">等待 BMduino 量測...</div>
+    </div>
+    <button class="btn" style="margin-top:16px;background:rgba(255,255,255,0.08);" onclick="cancelTask()">取消</button>
+  </div>
+
+  <div class="card" id="result-card" style="display:none;">
+    <h2>預測結果</h2>
+    <div class="result-grid" id="result-grid"></div>
+    <div style="margin-top:16px;">
+      <div class="detail-row"><span>計算時間</span><span id="result-time">-</span></div>
+    </div>
+    <button class="btn" style="margin-top:16px;" onclick="resetUI()">← 重新檢測</button>
+  </div>
+
+  <script>
+    let pollIntervalId = null;
+    let currentTaskId = null;
+
+    // ── 更新裝置狀態 ──
+    function updateBadge() {
+      fetch('/api/status').then(r => r.json()).then(d => {
+        const b = document.getElementById('device-badge');
+        const t = document.getElementById('badge-text');
+        b.className = d.device === 'connected' ? 'connected' : 'disconnected';
+        t.textContent = d.device === 'connected' ? '裝置已連線' : '裝置未連線';
+      }).catch(() => {
+        document.getElementById('badge-text').textContent = '伺服器離線';
+      });
+    }
+    updateBadge();
+    setInterval(updateBadge, 8000);
+
+    // ── 開始檢測 ──
+    async function startDetection() {
+      const userId = document.getElementById('userId').value.trim();
+      const gender = document.getElementById('gender').value;
+      const age = parseInt(document.getElementById('age').value);
+      const height = parseFloat(document.getElementById('height').value);
+      const weight = parseFloat(document.getElementById('weight').value);
+      const msg = document.getElementById('msg');
+
+      if (!userId || isNaN(age) || isNaN(height) || isNaN(weight) || age <= 0 || height <= 0 || weight <= 0) {
+        msg.style.color = '#f87171';
+        msg.textContent = '⚠ 請填寫所有欄位';
+        return;
+      }
+      document.getElementById('startBtn').disabled = true;
+      msg.textContent = '';
+
+      try {
+        const r = await fetch('/api/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subjectId: userId, gender, age, height, weight, mealState: 'fasting' })
+        });
+        const d = await r.json();
+        if (d.status === 'success') {
+          currentTaskId = d.taskId;
+          document.getElementById('input-card').style.display = 'none';
+          document.getElementById('wait-card').style.display = 'block';
+          startPolling();
+        } else {
+          msg.style.color = '#f87171';
+          msg.textContent = '❌ ' + (d.message || '錯誤');
+          document.getElementById('startBtn').disabled = false;
+        }
+      } catch (e) {
+        msg.style.color = '#f87171';
+        msg.textContent = '❌ 無法連接伺服器';
+        document.getElementById('startBtn').disabled = false;
+      }
+    }
+
+    // ── 輪詢 ──
+    function startPolling() {
+      const st = document.getElementById('status-text');
+      const statusMap = {
+        'waiting_for_device': '⏳ 等待 BMduino 採集...',
+        'predicting': '🧠 正在執行二階段預測...',
+        'computing': '🧮 正在呼叫 AI 進行分析...',
+      };
+      pollIntervalId = setInterval(async () => {
+        try {
+          const r = await fetch('/api/result/' + currentTaskId);
+          const d = await r.json();
+          if (d.status === 'waiting') {
+            st.textContent = statusMap[d.deviceStatus] || '⏳ 等待 BMduino...';
+          } else if (d.status === 'done' && d.result) {
+            stopPolling();
+            showResult(d.type, d.result);
+          } else if (d.status === 'timeout' || d.status === 'error') {
+            stopPolling();
+            st.textContent = '❌ ' + (d.status === 'timeout' ? '逾時' : '錯誤');
+          }
+        } catch (e) { }
+      }, 2000);
+    }
+
+    function stopPolling() {
+      if (pollIntervalId) { clearInterval(pollIntervalId); pollIntervalId = null; }
+    }
+
+    // ── 顯示結果 ──
+    function showResult(type, r) {
+      document.getElementById('wait-card').style.display = 'none';
+      document.getElementById('result-card').style.display = 'block';
+      document.getElementById('result-time').textContent = new Date().toLocaleTimeString('zh-TW');
+
+      const grid = document.getElementById('result-grid');
+
+      if (type === 'simple') {
+        // 第一次量測：只顯示丙酮值儲存成功
+        grid.innerHTML = `
+      <div class="result-item" style="grid-column:1/-1;text-align:center;">
+        <div class="verdict healthy" style="font-size:1.2rem;margin-bottom:8px;">
+          💾 空腹丙酮已儲存
+        </div>
+        <div class="conf" style="margin-bottom:16px;">請在飯後 2 小時再次進行測量</div>
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin-bottom:12px;">
+        <div class="detail-row"><span>空腹丙酮</span><span>${r.acetone_ppm.toFixed(3)} ppm</span></div>
+        <div class="detail-row"><span>進食狀態</span><span>${r.meal_state}</span></div>
+        <div class="detail-row" style="margin-top:8px;color:#64748b;">
+          <span colspan="2">${r.message}</span>
+        </div>
+      </div>
+    `;
+      } else {
+        // 第二次量測：顯示完整預測與 AI 建議
+        const isHealthy = r.prediction === 0;
+        const conf = (r.confidence * 100).toFixed(1);
+
+        // 處理 AI 回傳的文字（把換行符號 \n 轉換成網頁看得懂的 <br>）
+        const aiText = r.ai_advice ? r.ai_advice.replace(/\n/g, '<br>') : '⏳ 系統未回傳 AI 建議...';
+
+        grid.innerHTML = `
+      <div class="result-item" style="grid-column:1/-1;">
+        <div class="verdict ${isHealthy ? 'healthy' : 'diabetes'}" style="font-size:1.4rem;margin-bottom:8px;">
+          ${isHealthy ? '✅ Healthy (代謝良好)' : '⚠️ High Risk (高風險)'}
+        </div>
+        <div class="conf" style="margin-bottom:16px;">系統信心度 <strong>${conf}%</strong></div>
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin-bottom:12px;">
+        <div class="detail-row"><span>空腹丙酮 (前次)</span>  <span>${r.prev_ppm.toFixed(3)} ppm</span></div>
+        <div class="detail-row"><span>飯後丙酮 (本次)</span>  <span>${r.curr_ppm.toFixed(3)} ppm</span></div>
+        <div class="detail-row"><span>Acetone Max</span>      <span>${r.acetone_max.toFixed(3)} ppm</span></div>
+        <div class="detail-row"><span>Slope</span>            <span>${r.acetone_slope.toFixed(6)} ppm/min</span></div>
+      </div>
+     
+      <div class="result-item" style="grid-column:1/-1; background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent);">
+        <div style="font-size:1rem; font-weight:600; margin-bottom:10px; color: var(--accent2); display: flex; align-items: center; gap: 8px;">
+          <span>🤖</span> Agent AI 健康教練分析
+        </div>
+        <div style="font-size:0.85rem; line-height:1.7; color: #e2e8f0;">
+          ${aiText}
+        </div>
+      </div>
+    `;
+      }
+    }
+
+    function cancelTask() {
+      stopPolling();
+      currentTaskId = null;
+      resetUI();
+    }
+
+    function resetUI() {
+      stopPolling();
+      currentTaskId = null;
+      document.getElementById('input-card').style.display = 'block';
+      document.getElementById('wait-card').style.display = 'none';
+      document.getElementById('result-card').style.display = 'none';
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('msg').textContent = '';
+    }
+  </script>
+</body>
+
+</html>
